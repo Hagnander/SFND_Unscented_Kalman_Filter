@@ -16,6 +16,13 @@ class UKF {
    */
   virtual ~UKF();
 
+  void GenerateAugmentedSigmaPoints(Eigen::MatrixXd &Xsig_aug); 
+  void SigmaPointPrediction(Eigen::MatrixXd &Xsig_aug, double delta_t) ;
+  void PredictMeanAndCovariance();
+  void PredictLidarMeasurement(Eigen::VectorXd &z_pred, Eigen::MatrixXd &S, Eigen::MatrixXd &Zsig); 
+  void PredictRadarMeasurement(Eigen::VectorXd &z_pred, Eigen::MatrixXd &S, Eigen::MatrixXd &Zsig);
+  void UpdateState(Eigen::MatrixXd &Zsig, Eigen::VectorXd &z_pred, Eigen::MatrixXd &S, Eigen::VectorXd &z, MeasurementPackage::SensorType sensor_type);
+
   /**
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
