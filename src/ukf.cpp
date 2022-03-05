@@ -14,18 +14,43 @@ UKF::UKF() {
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
-  // initial state vector
-  x_ = VectorXd(5);
+  // State dimension
+  n_x_ = 5;
 
-  // initial covariance matrix
-  P_ = MatrixXd(5, 5);
+  // Augmented state dimension
+  n_aug_ = 7;
+
+  // initial state vector
+  x_ = VectorXd::Zero(n_x_);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 1;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
-  
+  std_yawdd_ = 1;
+
+  // initially set to false, set to true in first call of ProcessMeasurement
+  is_initialized_ = false;
+
+  // predicted sigma points matrix
+  Xsig_pred_ = MatrixXd::Zero(n_x_, 2 * n_aug_ + 1);
+
+  // time when the state is true, in us
+  time_us_ = 0;
+
+  // Weights of sigma points
+  weights_ = VectorXd(2 * n_aug_ + 1);
+
+  // Sigma point spreading parameter
+  lambda_ = 3 - n_aug_;
+
+  // set weights
+  weights_(0) = lambda_ / (lambda_+ n_aug_);
+  for (int i = 1; i < 2 * n_aug_ + 1; ++i) 
+  {
+    weights_(i) = 1 / (2 * (lambda_ + n_aug_));
+  }
+
   /**
    * DO NOT MODIFY measurement noise values below.
    * These are provided by the sensor manufacturer.
@@ -50,10 +75,10 @@ UKF::UKF() {
    * End DO NOT MODIFY section for measurement noise values 
    */
   
-  /**
-   * TODO: Complete the initialization. See ukf.h for other member properties.
-   * Hint: one or more values initialized above might be wildly off...
-   */
+  // initial covariance matrix
+  P_ = MatrixXd::Identity(n_x_, n_x_);
+  P_(3, 3) = std_laspx_ * std_laspy_;
+  P_(4, 4) = std_laspx_ * std_laspy_;
 }
 
 UKF::~UKF() {}
